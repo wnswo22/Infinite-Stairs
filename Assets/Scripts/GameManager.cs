@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+
 public class GameManager : MonoBehaviour {
     public Player player;
     public ObjectManager objectManager;
@@ -32,7 +33,6 @@ public class GameManager : MonoBehaviour {
     enum State { start, leftDir, rightDir }
     State state = State.start;
 
-
     void Awake() {
         players[selectedIndex].SetActive(true);
         player = players[selectedIndex].GetComponent<Player>();
@@ -45,6 +45,13 @@ public class GameManager : MonoBehaviour {
         UI[1].SetActive(!dslManager.IsRetry());        
     }
 
+    void Update() {
+        if (Input.GetKeyDown(KeyCode.UpArrow)) {
+            BtnDown(GameObject.Find("ClimbBtn"));
+        } else if (Input.GetKeyDown(KeyCode.Space)) {
+            BtnDown(GameObject.Find("ChangeDirBtn"));
+        }
+    }
 
     //Initially Spawn The Stairs
     void StairsInit() {
@@ -75,9 +82,6 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-
-
-
     //Spawn The Stairs At The Random Location
     void SpawnStair(int num) {
         IsChangeDir[num + 1 == 20 ? 0 : num + 1] = false;
@@ -96,11 +100,9 @@ public class GameManager : MonoBehaviour {
         if (Random.Range(1, 9) < 3) {
             if (state == State.leftDir) state = State.rightDir;
             else if (state == State.rightDir) state = State.leftDir;
-            IsChangeDir[num+1 == 20? 0 : num+1] = true;
+            IsChangeDir[num + 1 == 20 ? 0 : num + 1] = true;
         }
     }
-
-
 
     //Stairs Moving Along The Direction       
     public void StairMove(int stairIndex, bool isChange, bool isleft) {
@@ -124,11 +126,10 @@ public class GameManager : MonoBehaviour {
 
         //Score Update & Gauge Increase
         scoreText.text = (++score).ToString();
-        gauge.fillAmount += 0.7f ;
+        gauge.fillAmount += 0.7f;
         backGround.transform.position += backGround.transform.position.y < -14f ?
             new Vector3(0, 4.7f, 0) : new Vector3(0, -0.05f, 0);
     }
-
 
     //#.Gauge
     void GaugeReduce() {
@@ -143,17 +144,15 @@ public class GameManager : MonoBehaviour {
             if (score > 400) gaugeRedcutionRate = 0.0075f;
             gauge.fillAmount -= gaugeRedcutionRate;
         }
-        Invoke("GaugeReduce", 0.01f);
+        Invoke("GaugeReduce", 0.015f);
     }
 
-    
     IEnumerator CheckGauge() {
         while (gauge.fillAmount != 0) {
             yield return new WaitForSeconds(0.4f);
         }
         GameOver();
     }
-
 
     void GameOver() {
         //Animation
@@ -173,7 +172,6 @@ public class GameManager : MonoBehaviour {
         Invoke("DisableUI", 1.5f);
     }
 
-
     //Show score after game over
     void ShowScore() {
         finalScoreText.text = score.ToString();
@@ -185,14 +183,11 @@ public class GameManager : MonoBehaviour {
             UI[2].SetActive(true);
     }
 
-
-
     public void BtnDown(GameObject btn) {
         btn.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
         if (btn.name == "ClimbBtn")  player.Climb(false);
         else if (btn.name == "ChangeDirBtn") player.Climb(true);
     }
-
 
     public void BtnUp(GameObject btn) {
         btn.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -206,8 +201,6 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-
-
     //#.Setting
     public void SoundInit() {
         selectedIndex = dslManager.GetSelectedCharIndex();
@@ -216,7 +209,6 @@ public class GameManager : MonoBehaviour {
         sound[4] = player.sound[1];
         sound[5] = player.sound[2];
     }
-
 
     public void SettingBtnInit() {
         bool on;
@@ -238,7 +230,6 @@ public class GameManager : MonoBehaviour {
             else settingButtons[i].image.color = new Color(1, 1, 1, 0.5f);
         }
     }
-
 
     public void SettingBtnChange(Button btn) {
         bool on = dslManager.GetSettingOn(btn.name);
@@ -278,30 +269,24 @@ public class GameManager : MonoBehaviour {
         }       
     }
 
-    void Vibration()
-    {
+    void Vibration() {
         Handheld.Vibrate();
         sound[0].playOnAwake = false;
     }
-
 
     public void PlaySound(int index) {
         sound[index].Play();
     }
 
-    void DisableUI()
-    {
+    void DisableUI() {
         UI[0].SetActive(false);
     }
 
-
-    public void LoadScene(int i)
-    {
+    public void LoadScene(int i) {
         SceneManager.LoadScene(i);
     }
 
-    
     private void OnApplicationQuit() {
         dslManager.SaveMoney(player.money);
-    }   
+    }
 }
